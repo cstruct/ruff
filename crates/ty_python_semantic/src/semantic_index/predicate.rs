@@ -19,7 +19,7 @@ use crate::semantic_index::symbol::ScopedSymbolId;
 
 // A scoped identifier for each `Predicate` in a scope.
 #[derive(Clone, Debug, Copy, PartialOrd, Ord, PartialEq, Eq, Hash, get_size2::GetSize)]
-pub(crate) struct ScopedPredicateId(u32);
+pub struct ScopedPredicateId(u32);
 
 impl ScopedPredicateId {
     /// A special ID that is used for an "always true" predicate.
@@ -78,13 +78,13 @@ impl<'db> PredicatesBuilder<'db> {
 }
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct Predicate<'db> {
+pub struct Predicate<'db> {
     pub(crate) node: PredicateNode<'db>,
     pub(crate) is_positive: bool,
 }
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(crate) enum PredicateOrLiteral<'db> {
+pub enum PredicateOrLiteral<'db> {
     Literal(bool),
     Predicate(Predicate<'db>),
 }

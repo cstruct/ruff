@@ -94,7 +94,7 @@ impl FileScopeId {
 }
 
 #[derive(Debug, salsa::Update, get_size2::GetSize)]
-pub(crate) struct Scope {
+pub struct Scope {
     /// The parent scope, if any.
     parent: Option<FileScopeId>,
 
@@ -112,7 +112,7 @@ pub(crate) struct Scope {
 }
 
 impl Scope {
-    pub(super) fn new(
+    pub fn new(
         parent: Option<FileScopeId>,
         node: NodeWithScopeKind,
         descendants: Range<FileScopeId>,
@@ -198,7 +198,7 @@ impl ScopeLaziness {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ScopeKind {
+pub enum ScopeKind {
     Module,
     Annotation,
     Class,
@@ -266,7 +266,7 @@ impl ScopeKind {
 
 /// Reference to a node that introduces a new scope.
 #[derive(Copy, Clone, Debug)]
-pub(crate) enum NodeWithScopeRef<'a> {
+pub enum NodeWithScopeRef<'a> {
     Module,
     Class(&'a ast::StmtClassDef),
     Function(&'a ast::StmtFunctionDef),
@@ -364,7 +364,7 @@ impl NodeWithScopeRef<'_> {
 
 /// Node that introduces a new scope.
 #[derive(Clone, Debug, salsa::Update, get_size2::GetSize)]
-pub(crate) enum NodeWithScopeKind {
+pub enum NodeWithScopeKind {
     Module,
     Class(AstNodeRef<ast::StmtClassDef>),
     ClassTypeParameters(AstNodeRef<ast::StmtClassDef>),
@@ -380,7 +380,7 @@ pub(crate) enum NodeWithScopeKind {
 }
 
 impl NodeWithScopeKind {
-    pub(crate) const fn scope_kind(&self) -> ScopeKind {
+    pub const fn scope_kind(&self) -> ScopeKind {
         match self {
             Self::Module => ScopeKind::Module,
             Self::Class(_) => ScopeKind::Class,

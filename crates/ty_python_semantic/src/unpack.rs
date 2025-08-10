@@ -27,7 +27,7 @@ use crate::semantic_index::scope::{FileScopeId, ScopeId};
 /// * a field of a type that is a return type of a cross-module query
 /// * an argument of a cross-module query
 #[salsa::tracked(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) struct Unpack<'db> {
+pub struct Unpack<'db> {
     pub(crate) file: File,
 
     pub(crate) value_file_scope: FileScopeId,
@@ -43,7 +43,7 @@ pub(crate) struct Unpack<'db> {
 
     /// The ingredient representing the value expression of the unpacking. For example, in
     /// `(a, b) = (1, 2)`, the value expression is `(1, 2)`.
-    pub(crate) value: UnpackValue<'db>,
+    pub value: UnpackValue<'db>,
 }
 
 // The Salsa heap is tracked separately.
@@ -71,9 +71,9 @@ impl<'db> Unpack<'db> {
 
 /// The expression that is being unpacked.
 #[derive(Clone, Copy, Debug, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) struct UnpackValue<'db> {
+pub struct UnpackValue<'db> {
     /// The kind of unpack expression
-    kind: UnpackKind,
+    pub kind: UnpackKind,
     /// The expression we are unpacking
     expression: Expression<'db>,
 }
@@ -103,7 +103,7 @@ impl<'db> UnpackValue<'db> {
 }
 
 #[derive(Clone, Copy, Debug, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) enum EvaluationMode {
+pub enum EvaluationMode {
     Sync,
     Async,
 }
@@ -123,7 +123,7 @@ impl EvaluationMode {
 }
 
 #[derive(Clone, Copy, Debug, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) enum UnpackKind {
+pub enum UnpackKind {
     /// An iterable expression like the one in a `for` loop or a comprehension.
     Iterable { mode: EvaluationMode },
     /// An context manager expression like the one in a `with` statement.
@@ -134,7 +134,7 @@ pub(crate) enum UnpackKind {
 
 /// The position of the target element in an unpacking.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, salsa::Update, get_size2::GetSize)]
-pub(crate) enum UnpackPosition {
+pub enum UnpackPosition {
     /// The target element is in the first position of the unpacking.
     First,
     /// The target element is in the position other than the first position of the unpacking.

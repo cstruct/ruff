@@ -10,7 +10,7 @@ use std::ops::{Deref, DerefMut};
 
 /// A member access, e.g. `x.y` or `x[1]` or `x["foo"]`.
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct Member {
+pub struct Member {
     expression: MemberExpr,
     flags: MemberFlags,
 }

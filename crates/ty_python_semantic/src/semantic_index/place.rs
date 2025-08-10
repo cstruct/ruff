@@ -60,7 +60,7 @@ impl std::fmt::Display for PlaceExpr {
 ///
 /// Needed so that we can iterate over all places without cloning them.
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
-pub(crate) enum PlaceExprRef<'a> {
+pub enum PlaceExprRef<'a> {
     Symbol(&'a Symbol),
     Member(&'a Member),
 }

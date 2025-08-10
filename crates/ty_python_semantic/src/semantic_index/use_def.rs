@@ -685,7 +685,7 @@ pub(crate) struct EnclosingSnapshotKey {
 type EnclosingSnapshots = IndexVec<ScopedEnclosingSnapshotId, EnclosingSnapshot>;
 
 #[derive(Debug)]
-pub(crate) struct BindingWithConstraintsIterator<'map, 'db> {
+pub struct BindingWithConstraintsIterator<'map, 'db> {
     all_definitions: &'map IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
     pub(crate) predicates: &'map Predicates<'db>,
     pub(crate) narrowing_constraints: &'map NarrowingConstraints,
@@ -717,13 +717,13 @@ impl<'map, 'db> Iterator for BindingWithConstraintsIterator<'map, 'db> {
 
 impl std::iter::FusedIterator for BindingWithConstraintsIterator<'_, '_> {}
 
-pub(crate) struct BindingWithConstraints<'map, 'db> {
-    pub(crate) binding: DefinitionState<'db>,
-    pub(crate) narrowing_constraint: ConstraintsIterator<'map, 'db>,
-    pub(crate) reachability_constraint: ScopedReachabilityConstraintId,
+pub struct BindingWithConstraints<'map, 'db> {
+    pub binding: DefinitionState<'db>,
+    pub narrowing_constraint: ConstraintsIterator<'map, 'db>,
+    pub reachability_constraint: ScopedReachabilityConstraintId,
 }
 
-pub(crate) struct ConstraintsIterator<'map, 'db> {
+pub struct ConstraintsIterator<'map, 'db> {
     predicates: &'map Predicates<'db>,
     constraint_ids: NarrowingConstraintsIterator<'map>,
 }
@@ -767,7 +767,7 @@ impl<'db> ConstraintsIterator<'_, 'db> {
 }
 
 #[derive(Clone)]
-pub(crate) struct DeclarationsIterator<'map, 'db> {
+pub struct DeclarationsIterator<'map, 'db> {
     all_definitions: &'map IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
     pub(crate) predicates: &'map Predicates<'db>,
     pub(crate) reachability_constraints: &'map ReachabilityConstraints,
@@ -775,7 +775,7 @@ pub(crate) struct DeclarationsIterator<'map, 'db> {
     inner: LiveDeclarationsIterator<'map>,
 }
 
-pub(crate) struct DeclarationWithConstraint<'db> {
+pub struct DeclarationWithConstraint<'db> {
     pub(crate) declaration: DefinitionState<'db>,
     pub(crate) reachability_constraint: ScopedReachabilityConstraintId,
 }

@@ -38,10 +38,10 @@ use crate::semantic_index::scope::FileScopeId;
 /// A constraint is a list of [`Predicate`]s that each constrain the type of the binding's place.
 ///
 /// [`Predicate`]: crate::semantic_index::predicate::Predicate
-pub(crate) type ScopedNarrowingConstraint = List<ScopedNarrowingConstraintPredicate>;
+pub type ScopedNarrowingConstraint = List<ScopedNarrowingConstraintPredicate>;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum ConstraintKey {
+pub enum ConstraintKey {
     NarrowingConstraint(ScopedNarrowingConstraint),
     NestedScope(FileScopeId),
     UseId(ScopedUseId),
@@ -56,7 +56,7 @@ pub(crate) enum ConstraintKey {
 ///
 /// [`Predicate`]: crate::semantic_index::predicate::Predicate
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, get_size2::GetSize)]
-pub(crate) struct ScopedNarrowingConstraintPredicate(ScopedPredicateId);
+pub struct ScopedNarrowingConstraintPredicate(ScopedPredicateId);
 
 impl ScopedNarrowingConstraintPredicate {
     /// Returns (the ID of) the `Predicate`

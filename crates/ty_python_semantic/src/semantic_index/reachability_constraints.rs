@@ -230,7 +230,7 @@ use crate::types::{
 /// reachability constraints are normalized, so equivalent constraints are guaranteed to have equal
 /// IDs.
 #[derive(Clone, Copy, Eq, Hash, PartialEq, get_size2::GetSize)]
-pub(crate) struct ScopedReachabilityConstraintId(u32);
+pub struct ScopedReachabilityConstraintId(u32);
 
 impl std::fmt::Debug for ScopedReachabilityConstraintId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

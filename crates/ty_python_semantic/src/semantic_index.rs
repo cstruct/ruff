@@ -33,14 +33,14 @@ pub mod ast_ids;
 mod builder;
 pub mod definition;
 pub mod expression;
-pub(crate) mod member;
-pub(crate) mod narrowing_constraints;
+pub mod member;
+pub mod narrowing_constraints;
 pub mod place;
-pub(crate) mod predicate;
+pub mod predicate;
 mod re_exports;
 mod reachability_constraints;
-pub(crate) mod scope;
-pub(crate) mod symbol;
+pub mod scope;
+pub mod symbol;
 mod use_def;
 
 pub(crate) use self::use_def::{
@@ -52,7 +52,7 @@ pub(crate) use self::use_def::{
 ///
 /// Prefer using [`symbol_table`] when working with symbols from a single scope.
 #[salsa::tracked(returns(ref), no_eq, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn semantic_index(db: &dyn Db, file: File) -> SemanticIndex<'_> {
+pub fn semantic_index(db: &dyn Db, file: File) -> SemanticIndex<'_> {
     let _span = tracing::trace_span!("semantic_index", ?file).entered();
 
     let module = parsed_module(db, file).load(db);
@@ -66,7 +66,7 @@ pub(crate) fn semantic_index(db: &dyn Db, file: File) -> SemanticIndex<'_> {
 /// Salsa can avoid invalidating dependent queries if this scope's place table
 /// is unchanged.
 #[salsa::tracked(returns(deref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn place_table<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Arc<PlaceTable> {
+pub fn place_table<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Arc<PlaceTable> {
     let file = scope.file(db);
     let _span = tracing::trace_span!("place_table", scope=?scope.as_id(), ?file).entered();
     let index = semantic_index(db, file);
@@ -86,7 +86,7 @@ pub(crate) fn place_table<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Arc<Plac
 ///   - We cannot resolve relative imports (which aren't allowed in `import` statements) without
 ///     knowing the name of the current module, and whether it's a package.
 #[salsa::tracked(returns(deref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn imported_modules<'db>(db: &'db dyn Db, file: File) -> Arc<FxHashSet<ModuleName>> {
+pub fn imported_modules<'db>(db: &'db dyn Db, file: File) -> Arc<FxHashSet<ModuleName>> {
     semantic_index(db, file).imported_modules.clone()
 }
 
@@ -96,7 +96,7 @@ pub(crate) fn imported_modules<'db>(db: &'db dyn Db, file: File) -> Arc<FxHashSe
 /// Salsa can avoid invalidating dependent queries if this scope's use-def map
 /// is unchanged.
 #[salsa::tracked(returns(deref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn use_def_map<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Arc<UseDefMap<'db>> {
+pub fn use_def_map<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Arc<UseDefMap<'db>> {
     let file = scope.file(db);
     let _span = tracing::trace_span!("use_def_map", scope=?scope.as_id(), ?file).entered();
     let index = semantic_index(db, file);
@@ -109,7 +109,7 @@ pub(crate) fn use_def_map<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Arc<UseD
 ///
 /// Only call this when doing type inference on the same file as `class_body_scope`, otherwise it
 /// introduces a direct dependency on that file's AST.
-pub(crate) fn attribute_assignments<'db, 's>(
+pub fn attribute_assignments<'db, 's>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
     name: &'s str,
@@ -133,7 +133,7 @@ pub(crate) fn attribute_assignments<'db, 's>(
 ///
 /// Only call this when doing type inference on the same file as `class_body_scope`, otherwise it
 /// introduces a direct dependency on that file's AST.
-pub(crate) fn attribute_declarations<'db, 's>(
+pub fn attribute_declarations<'db, 's>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
     name: &'s str,
@@ -156,7 +156,7 @@ pub(crate) fn attribute_declarations<'db, 's>(
 ///
 /// Only call this when doing type inference on the same file as `class_body_scope`, otherwise it
 /// introduces a direct dependency on that file's AST.
-pub(crate) fn attribute_scopes<'db, 's>(
+pub fn attribute_scopes<'db, 's>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
 ) -> impl Iterator<Item = FileScopeId> + use<'s, 'db> {
@@ -184,13 +184,13 @@ pub(crate) fn attribute_scopes<'db, 's>(
 
 /// Returns the module global scope of `file`.
 #[salsa::tracked(heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn global_scope(db: &dyn Db, file: File) -> ScopeId<'_> {
+pub fn global_scope(db: &dyn Db, file: File) -> ScopeId<'_> {
     let _span = tracing::trace_span!("global_scope", ?file).entered();
 
     FileScopeId::global().to_scope_id(db, file)
 }
 
-pub(crate) enum EnclosingSnapshotResult<'map, 'db> {
+pub enum EnclosingSnapshotResult<'map, 'db> {
     FoundConstraint(ScopedNarrowingConstraint),
     FoundBindings(BindingWithConstraintsIterator<'map, 'db>),
     NotFound,
@@ -199,7 +199,7 @@ pub(crate) enum EnclosingSnapshotResult<'map, 'db> {
 
 /// The place tables and use-def maps for all scopes in a file.
 #[derive(Debug, Update, get_size2::GetSize)]
-pub(crate) struct SemanticIndex<'db> {
+pub struct SemanticIndex<'db> {
     /// List of all place tables in this file, indexed by scope.
     place_tables: IndexVec<FileScopeId, Arc<PlaceTable>>,
 
@@ -266,13 +266,13 @@ impl<'db> SemanticIndex<'db> {
     }
 
     #[track_caller]
-    pub(crate) fn ast_ids(&self, scope_id: FileScopeId) -> &AstIds {
+    pub fn ast_ids(&self, scope_id: FileScopeId) -> &AstIds {
         &self.ast_ids[scope_id]
     }
 
     /// Returns the ID of the `expression`'s enclosing scope.
     #[track_caller]
-    pub(crate) fn expression_scope_id<E>(&self, expression: &E) -> FileScopeId
+    pub fn expression_scope_id<E>(&self, expression: &E) -> FileScopeId
     where
         E: HasTrackedScope,
     {
@@ -281,7 +281,7 @@ impl<'db> SemanticIndex<'db> {
     }
 
     /// Returns the ID of the `expression`'s enclosing scope.
-    pub(crate) fn try_expression_scope_id<E>(&self, expression: &E) -> Option<FileScopeId>
+    pub fn try_expression_scope_id<E>(&self, expression: &E) -> Option<FileScopeId>
     where
         E: HasTrackedScope,
     {
@@ -291,21 +291,21 @@ impl<'db> SemanticIndex<'db> {
     /// Returns the [`Scope`] of the `expression`'s enclosing scope.
     #[allow(unused)]
     #[track_caller]
-    pub(crate) fn expression_scope(&self, expression: &impl HasTrackedScope) -> &Scope {
+    pub fn expression_scope(&self, expression: &impl HasTrackedScope) -> &Scope {
         &self.scopes[self.expression_scope_id(expression)]
     }
 
     /// Returns the [`Scope`] with the given id.
     #[track_caller]
-    pub(crate) fn scope(&self, id: FileScopeId) -> &Scope {
+    pub fn scope(&self, id: FileScopeId) -> &Scope {
         &self.scopes[id]
     }
 
-    pub(crate) fn scope_ids(&self) -> impl Iterator<Item = ScopeId<'db>> + '_ {
+    pub fn scope_ids(&self) -> impl Iterator<Item = ScopeId<'db>> + '_ {
         self.scope_ids_by_scope.iter().copied()
     }
 
-    pub(crate) fn symbol_is_global_in_scope(
+    pub fn symbol_is_global_in_scope(
         &self,
         symbol: ScopedSymbolId,
         scope: FileScopeId,
@@ -313,7 +313,7 @@ impl<'db> SemanticIndex<'db> {
         self.place_table(scope).symbol(symbol).is_global()
     }
 
-    pub(crate) fn symbol_is_nonlocal_in_scope(
+    pub fn symbol_is_nonlocal_in_scope(
         &self,
         symbol: ScopedSymbolId,
         scope: FileScopeId,
@@ -322,15 +322,14 @@ impl<'db> SemanticIndex<'db> {
     }
 
     /// Returns the id of the parent scope.
-    pub(crate) fn parent_scope_id(&self, scope_id: FileScopeId) -> Option<FileScopeId> {
+    pub fn parent_scope_id(&self, scope_id: FileScopeId) -> Option<FileScopeId> {
         let scope = self.scope(scope_id);
         scope.parent()
     }
 
     /// Returns the parent scope of `scope_id`.
-    #[expect(unused)]
     #[track_caller]
-    pub(crate) fn parent_scope(&self, scope_id: FileScopeId) -> Option<&Scope> {
+    pub fn parent_scope(&self, scope_id: FileScopeId) -> Option<&Scope> {
         Some(&self.scopes[self.parent_scope_id(scope_id)?])
     }
 
@@ -359,7 +358,7 @@ impl<'db> SemanticIndex<'db> {
     ///     return
     ///     x  # 3
     /// ```
-    pub(crate) fn is_node_reachable(
+    pub fn is_node_reachable(
         &self,
         db: &'db dyn crate::Db,
         scope_id: FileScopeId,
@@ -371,18 +370,18 @@ impl<'db> SemanticIndex<'db> {
 
     /// Returns an iterator over the descendent scopes of `scope`.
     #[allow(unused)]
-    pub(crate) fn descendent_scopes(&self, scope: FileScopeId) -> DescendantsIter<'_> {
+    pub fn descendent_scopes(&self, scope: FileScopeId) -> DescendantsIter<'_> {
         DescendantsIter::new(self, scope)
     }
 
     /// Returns an iterator over the direct child scopes of `scope`.
     #[allow(unused)]
-    pub(crate) fn child_scopes(&self, scope: FileScopeId) -> ChildrenIter<'_> {
+    pub fn child_scopes(&self, scope: FileScopeId) -> ChildrenIter<'_> {
         ChildrenIter::new(self, scope)
     }
 
     /// Returns an iterator over all ancestors of `scope`, starting with `scope` itself.
-    pub(crate) fn ancestor_scopes(&self, scope: FileScopeId) -> AncestorsIter<'_> {
+    pub fn ancestor_scopes(&self, scope: FileScopeId) -> AncestorsIter<'_> {
         AncestorsIter::new(self, scope)
     }
 
@@ -400,7 +399,7 @@ impl<'db> SemanticIndex<'db> {
     ///         print(x)  # Refers to global x=1, not class x=2
     /// ```
     /// The `method` function can see the global scope but not the class scope.
-    pub(crate) fn visible_ancestor_scopes(&self, scope: FileScopeId) -> VisibleAncestorsIter<'_> {
+    pub fn visible_ancestor_scopes(&self, scope: FileScopeId) -> VisibleAncestorsIter<'_> {
         VisibleAncestorsIter::new(self, scope)
     }
 
@@ -409,7 +408,7 @@ impl<'db> SemanticIndex<'db> {
     /// There will only ever be >1 `Definition` associated with a `definition_key`
     /// if the definition is created by a wildcard (`*`) import.
     #[track_caller]
-    pub(crate) fn definitions(
+    pub fn definitions(
         &self,
         definition_key: impl Into<DefinitionNodeKey>,
     ) -> &Definitions<'db> {
@@ -423,7 +422,7 @@ impl<'db> SemanticIndex<'db> {
     /// If the number of definitions associated with the key is not exactly 1 and
     /// the `debug_assertions` feature is enabled, this method will panic.
     #[track_caller]
-    pub(crate) fn expect_single_definition(
+    pub fn expect_single_definition(
         &self,
         definition_key: impl Into<DefinitionNodeKey> + std::fmt::Debug + Copy,
     ) -> Definition<'db> {
@@ -442,14 +441,14 @@ impl<'db> SemanticIndex<'db> {
     /// standalone-inferable expressions, which we call `add_standalone_expression` for in
     /// [`SemanticIndexBuilder`].
     #[track_caller]
-    pub(crate) fn expression(
+    pub fn expression(
         &self,
         expression_key: impl Into<ExpressionNodeKey>,
     ) -> Expression<'db> {
         self.expressions_by_node[&expression_key.into()]
     }
 
-    pub(crate) fn try_expression(
+    pub fn try_expression(
         &self,
         expression_key: impl Into<ExpressionNodeKey>,
     ) -> Option<Expression<'db>> {
@@ -458,7 +457,7 @@ impl<'db> SemanticIndex<'db> {
             .copied()
     }
 
-    pub(crate) fn is_standalone_expression(
+    pub fn is_standalone_expression(
         &self,
         expression_key: impl Into<ExpressionNodeKey>,
     ) -> bool {
@@ -470,7 +469,7 @@ impl<'db> SemanticIndex<'db> {
     /// This is different from [`definition::Definition::scope`] which
     /// returns the scope in which that definition is defined in.
     #[track_caller]
-    pub(crate) fn node_scope(&self, node: NodeWithScopeRef) -> FileScopeId {
+    pub fn node_scope(&self, node: NodeWithScopeRef) -> FileScopeId {
         self.scopes_by_node[&node.node_key()]
     }
 
@@ -486,7 +485,7 @@ impl<'db> SemanticIndex<'db> {
     /// *  an iterator of bindings for a particular nested scope reference if the bindings exist.
     /// *  a narrowing constraint if there are no bindings, but there is a narrowing constraint for an enclosing scope place.
     /// * `NotFound` if the narrowing constraint / bindings do not exist in the nested scope.
-    pub(crate) fn enclosing_snapshot(
+    pub fn enclosing_snapshot(
         &self,
         enclosing_scope: FileScopeId,
         expr: PlaceExprRef,
@@ -531,12 +530,12 @@ impl<'db> SemanticIndex<'db> {
         self.use_def_maps[enclosing_scope].enclosing_snapshot(*id, key.nested_laziness)
     }
 
-    pub(crate) fn semantic_syntax_errors(&self) -> &[SemanticSyntaxError] {
+    pub fn semantic_syntax_errors(&self) -> &[SemanticSyntaxError] {
         &self.semantic_syntax_errors
     }
 }
 
-pub(crate) struct AncestorsIter<'a> {
+pub struct AncestorsIter<'a> {
     scopes: &'a IndexSlice<FileScopeId, Scope>,
     next_id: Option<FileScopeId>,
 }
@@ -564,7 +563,7 @@ impl<'a> Iterator for AncestorsIter<'a> {
 
 impl FusedIterator for AncestorsIter<'_> {}
 
-pub(crate) struct VisibleAncestorsIter<'a> {
+pub struct VisibleAncestorsIter<'a> {
     inner: AncestorsIter<'a>,
     starting_scope_kind: ScopeKind,
     yielded_count: usize,
@@ -611,7 +610,7 @@ impl<'a> Iterator for VisibleAncestorsIter<'a> {
 
 impl FusedIterator for VisibleAncestorsIter<'_> {}
 
-pub(crate) struct DescendantsIter<'a> {
+pub struct DescendantsIter<'a> {
     next_id: FileScopeId,
     descendants: std::slice::Iter<'a, Scope>,
 }
@@ -648,13 +647,13 @@ impl FusedIterator for DescendantsIter<'_> {}
 
 impl ExactSizeIterator for DescendantsIter<'_> {}
 
-pub(crate) struct ChildrenIter<'a> {
+pub struct ChildrenIter<'a> {
     parent: FileScopeId,
     descendants: DescendantsIter<'a>,
 }
 
 impl<'a> ChildrenIter<'a> {
-    pub(crate) fn new(module_index: &'a SemanticIndex, parent: FileScopeId) -> Self {
+    pub fn new(module_index: &'a SemanticIndex, parent: FileScopeId) -> Self {
         let descendants = DescendantsIter::new(module_index, parent);
 
         Self {

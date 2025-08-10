@@ -33,7 +33,7 @@ use ruff_text_size::Ranged;
 #[derive(Clone)]
 pub struct AstNodeRef<T> {
     /// A pointer to the [`ruff_db::parsed::ParsedModule`] that this node was created from.
-    module_ptr: *const (),
+    pub module_ptr: *const (),
 
     /// Debug information.
     #[cfg(debug_assertions)]
