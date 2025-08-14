@@ -8985,6 +8985,17 @@ pub struct StmtFunctionDef {
     pub body: Vec<Stmt>,
 }
 
+impl Eq for StmtFunctionDef {}
+
+impl std::hash::Hash for StmtFunctionDef {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.node_index.hash(state);
+        self.range.hash(state);
+        self.is_async.hash(state);
+        self.name.hash(state);
+    }
+}
+
 /// See also [ClassDef](https://docs.python.org/3/library/ast.html#ast.ClassDef)
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "get-size", derive(get_size2::GetSize))]
