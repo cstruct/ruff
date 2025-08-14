@@ -11,13 +11,14 @@ use crate::semantic_index::{
     attribute_scopes, global_scope, place_table, semantic_index, use_def_map,
 };
 use crate::types::call::{CallArguments, MatchedArgument};
+use crate::types::infer::nearest_enclosing_class;
 use crate::types::signatures::Signature;
-use crate::types::{ClassBase, ClassLiteral, DynamicType, KnownClass, KnownInstanceType, Type};
+use crate::types::{BindingContext, BoundTypeVarInstance, ClassBase, ClassLiteral, DynamicType, KnownClass, KnownInstanceType, Type, TypeVarBoundOrConstraints, TypeVarInstance, TypeVarKind, TypeVarVariance};
 use crate::{Db, HasType, NameKind, SemanticModel};
 use ruff_db::files::{File, FileRange};
 use ruff_db::parsed::parsed_module;
 use ruff_python_ast::name::Name;
-use ruff_python_ast::{self as ast};
+use ruff_python_ast::{self as ast, Expr, ExprName};
 use ruff_text_size::{Ranged, TextRange};
 use rustc_hash::FxHashSet;
 
@@ -564,13 +565,40 @@ pub fn definitions_for_attribute<'db>(
     file: File,
     attribute: &ast::ExprAttribute,
 ) -> Vec<ResolvedDefinition<'db>> {
+    let index = semantic_index(db, file);
     let name_str = attribute.attr.as_str();
     let model = SemanticModel::new(db, file);
 
     let mut resolved = Vec::new();
 
     // Determine the type of the LHS
-    let lhs_ty = attribute.value.inferred_type(&model);
+    let lhs_ty = if let Expr::Name(ExprName { id, .. }) = *attribute.value.clone() {
+        if id.as_str() == "self" {
+            let module = parsed_module(db, file).load(db);
+            let file_scope = index.expression_scope_id(&ast::ExprRef::from(attribute));
+            let Some(class) = nearest_enclosing_class(db, index, file_scope.to_scope_id(db, file), &module) else {
+                return vec![];
+            };
+            let instance = Type::ClassLiteral(class).to_instance(db).expect(
+                "nearest_enclosing_class must return type that can be instantiated",
+            );
+            let class_definition = class.definition(db);
+            Type::TypeVar(BoundTypeVarInstance::new(
+                db,
+                TypeVarInstance::new(
+                    db,
+                    ast::name::Name::new_static("Self"),
+                    Some(class_definition),
+                    Some(TypeVarBoundOrConstraints::UpperBound(instance)),
+                    TypeVarVariance::Invariant,
+                    None,
+                    TypeVarKind::Implicit,
+                ),
+                BindingContext::Synthetic,
+            ))
+        } else { attribute.value.inferred_type(&model) }
+    } else { attribute.value.inferred_type(&model) };
+
     let tys = match lhs_ty {
         Type::Union(union) => union.elements(db).to_vec(),
         _ => vec![lhs_ty],
