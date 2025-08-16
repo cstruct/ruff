@@ -51,7 +51,7 @@ use crate::types::generics::{
     walk_partial_specialization, walk_specialization,
 };
 pub use crate::types::ide_support::{
-    CallSignatureDetails, Member, all_members, call_signature_details, definition_kind_for_name,
+    CallSignatureDetails, Member, resolve_definition, all_members, call_signature_details, definition_kind_for_name,
     definitions_for_attribute, definitions_for_imported_symbol, definitions_for_keyword_argument,
     definitions_for_name, find_active_signature_from_details, inlay_hint_function_argument_details,
 };

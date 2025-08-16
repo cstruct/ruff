@@ -983,7 +983,7 @@ fn find_parameter_range(parameters: &ast::Parameters, parameter_name: &str) -> O
         .map(|param| param.parameter.name.range())
 }
 
-mod resolve_definition {
+pub mod resolve_definition {
     //! Resolves an Import, `ImportFrom` or `StarImport` definition to one or more
     //! "resolved definitions". This is done recursively to find the original
     //! definition targeted by the import.
@@ -1220,7 +1220,7 @@ mod resolve_definition {
     }
 
     /// Find definitions for a symbol name in a specific scope.
-    pub(crate) fn find_symbol_in_scope<'db>(
+    pub fn find_symbol_in_scope<'db>(
         db: &'db dyn Db,
         scope: ScopeId<'db>,
         symbol_name: &str,
