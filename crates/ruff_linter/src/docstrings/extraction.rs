@@ -4,7 +4,7 @@ use ruff_python_ast::{self as ast, Stmt};
 use ruff_python_semantic::{Definition, DefinitionId, Definitions, Member, MemberKind};
 
 /// Extract a docstring from a function or class body.
-pub(crate) fn docstring_from(suite: &[Stmt]) -> Option<&ast::ExprStringLiteral> {
+pub fn docstring_from(suite: &[Stmt]) -> Option<&ast::ExprStringLiteral> {
     let stmt = suite.first()?;
     // Require the docstring to be a standalone expression.
     let Stmt::Expr(ast::StmtExpr {
@@ -20,7 +20,7 @@ pub(crate) fn docstring_from(suite: &[Stmt]) -> Option<&ast::ExprStringLiteral> 
 }
 
 /// Extract a docstring from a `Definition`.
-pub(crate) fn extract_docstring<'a>(
+pub fn extract_docstring<'a>(
     definition: &'a Definition<'a>,
 ) -> Option<&'a ast::ExprStringLiteral> {
     match definition {
@@ -30,13 +30,13 @@ pub(crate) fn extract_docstring<'a>(
 }
 
 #[derive(Copy, Clone)]
-pub(crate) enum ExtractionTarget<'a> {
+pub enum ExtractionTarget<'a> {
     Class(&'a ast::StmtClassDef),
     Function(&'a ast::StmtFunctionDef),
 }
 
 /// Extract a `Definition` from the AST node defined by a `Stmt`.
-pub(crate) fn extract_definition<'a>(
+pub fn extract_definition<'a>(
     target: ExtractionTarget<'a>,
     parent: DefinitionId,
     definitions: &Definitions<'a>,
