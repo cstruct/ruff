@@ -815,7 +815,7 @@ fn resolve_from_import_submodule_definitions<'db>(
 }
 
 /// Find definitions for a symbol name in a specific scope.
-pub(crate) fn find_symbol_in_scope<'db>(
+pub fn find_symbol_in_scope<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     symbol_name: &str,
